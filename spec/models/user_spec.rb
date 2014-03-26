@@ -15,14 +15,26 @@ describe User do
   it { should respond_to(:password) }
   it { should respond_to(:password_confirmation) }
   it { should respond_to(:authenticate) }
+  it { should respond_to(:remember_token) }
+  it { should respond_to(:admin)  }
 
   it { should be_valid }
+  it { should_not be_admin  }
+
+  describe "with admin attribute set to 'true'" do
+    before do
+      @user.save!
+      @user.toggle!(:admin)
+    end
+
+    it { should be_admin }
+  end
 
   describe "when password is not present" do
-    before do 
+    before do
       @user = User.new(name: "Example User", email: "user@example.com",
                        password: "", password_confirmation: "")
-    end 
+    end
 
     it { should_not be_valid }
   end
@@ -68,7 +80,7 @@ describe User do
   describe "when name is too long" do
     before { @user.name = 'a' * 51 }
     it { should_not be_valid }
-  end 
+  end
 
   describe "when email format is invalid" do
     it "should be invalid" do
@@ -90,7 +102,7 @@ describe User do
     end
   end
 
-  describe "when email address is already taken" do 
+  describe "when email address is already taken" do
     before do
       user_with_same_email = @user.dup
       user_with_same_email.email = @user.email.upcase
@@ -98,5 +110,10 @@ describe User do
     end
 
     it { should_not be_valid }
+  end
+
+  describe "remember token" do
+    before { @user.save }
+    its(:remember_token) { should_not be_blank }
   end
 end
