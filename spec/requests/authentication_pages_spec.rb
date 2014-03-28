@@ -19,7 +19,6 @@ describe "Authentication" do
 
       it { should have_title('Sign in') }
       it { should have_selector('div.alert.alert-danger', text: 'Invalid') }
-
       describe "after visiting another page" do
         before { click_link "Home" }
         it { should_not have_selector('div.alert.alert-danger') }
@@ -48,11 +47,33 @@ describe "Authentication" do
     describe "for non-sigined-in users" do
       let(:user) { FactoryGirl.create(:user) }
 
+      describe "in the Relationships controller" do
+        describe "submitting to the create action" do
+          before { post relationships_path }
+          specify { expect(response).to redirect_to(signin_path) }
+        end
+
+        describe "submitting to the destroy action" do
+          before { delete relationship_path(1) }
+          specify { expect(response).to redirect_to(signin_path) }
+        end
+      end
+
       describe "in the Users controller" do
         describe "visiting the edit page" do
           before { visit edit_user_path(user) }
 
           it { should have_title('Sign in') }
+
+          describe "visiting the following page" do
+            before { visit following_user_path(user) }
+            it { should have_title('Sign in') }
+          end
+
+          describe "visiting the followers page" do
+            before { visit followers_user_path(user) }
+            it { should have_title('Sign in') }
+          end
         end
 
         describe "visiting the user index" do
@@ -82,17 +103,6 @@ describe "Authentication" do
         end
       end
 
-      describe "in the Microposts controller" do
-        describe "submitting to the craete action" do
-          before { post microposts_path }
-          specify { expect(response).to redirect_to(signin_path) }
-        end
-
-        describe "submitting to the destroy action" do
-          before { delete micropost_path(FactoryGirl.create(:micropost)) }
-          specify { expect(response).to redirect_to(signin_path) }
-        end
-      end
     end
 
     describe "as wrong user" do
